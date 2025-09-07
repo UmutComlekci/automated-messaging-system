@@ -32,7 +32,7 @@ func newApiCommand() *cobra.Command {
 // @title Message Scheduler API
 // @version 1.0
 // @description Automatic message sending system
-// @host localhost:8080
+// @host localhost:8081
 // @BasePath /
 func apiCommand(cmd *cobra.Command, args []string) error {
 	apiLogger := logging.NewLogger("api")
@@ -55,7 +55,7 @@ func apiCommand(cmd *cobra.Command, args []string) error {
 
 	// Scheduler control endpoints
 	temporalClient, err := client.Dial(client.Options{
-		HostPort: client.DefaultHostPort,
+		HostPort: config.GetTemporalHostPort(),
 		Logger:   log.NewStructuredLogger(logging.NewLogger("temporal")),
 	})
 	if err != nil {

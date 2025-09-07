@@ -20,6 +20,8 @@ func init() {
 	viper.SetDefault("POSTGRESQL_DATABASE", "messagedb")
 	viper.SetDefault("POSTGRESQL_SSL_MODE", "disable")
 
+	viper.SetDefault("TEMPORAL_HOST", "localhost:7233")
+
 	viper.SetDefault("REDIS_URL", "redis://localhost:6379")
 
 	viper.SetDefault("PROVIDER", "http")
@@ -32,6 +34,9 @@ func GetRelease() string { return viper.GetString("RELEASE") }
 
 // Api
 func GetApiPort() string { return viper.GetString("SERVER_PORT") }
+
+// Temporal
+func GetTemporalHostPort() string { return viper.GetString("TEMPORAL_HOST") }
 
 // Database
 func GetSqlDriver() string { return viper.GetString("SQL_DRIVER") }

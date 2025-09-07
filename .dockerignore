@@ -1,0 +1,5 @@
+.docker
+.vscode
+.env
+README.md
+docker-compose.yml

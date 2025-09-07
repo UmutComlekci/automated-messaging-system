@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/umutcomlekci/automated-messaging-system/internal/activities"
+	"github.com/umutcomlekci/automated-messaging-system/internal/config"
 	"github.com/umutcomlekci/automated-messaging-system/internal/logging"
 	"github.com/umutcomlekci/automated-messaging-system/internal/repository/messages"
 	"github.com/umutcomlekci/automated-messaging-system/internal/services/sms"
@@ -30,7 +31,7 @@ func sendMessageWorkerCommand(cmd *cobra.Command, args []string) error {
 	workerLogger := logging.NewLogger("send_message_worker")
 
 	c, err := client.Dial(client.Options{
-		HostPort: client.DefaultHostPort,
+		HostPort: config.GetTemporalHostPort(),
 		Logger:   log.NewStructuredLogger(logging.NewLogger("temporal")),
 	})
 	if err != nil {

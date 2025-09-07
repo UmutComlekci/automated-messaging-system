@@ -1,4 +1,64 @@
 services:
+
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["api", "serve"]
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      - APP_NAME=automated-messaging-system-api
+      - TEMPORAL_HOST=temporal:7233
+      - POSTGRESQL_HOST=postgresql
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - message-network
+    depends_on:
+      - postgresql
+      - temporal
+      - redis
+
+  pending-messages-worker:
+    container_name: pending-messages-worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["worker", "pending-messages"]
+    restart: unless-stopped
+    environment:
+      - APP_NAME=automated-messaging-system-pending-messages-worker
+      - TEMPORAL_HOST=temporal:7233
+      - POSTGRESQL_HOST=postgresql
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - message-network
+    depends_on:
+      - postgresql
+      - temporal
+      - redis
+
+  send-message-worker:
+    container_name: send-message-worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["worker", "send-message"]
+    restart: unless-stopped
+    environment:
+      - APP_NAME=automated-messaging-system-send-message-worker
+      - TEMPORAL_HOST=temporal:7233
+      - POSTGRESQL_HOST=postgresql
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - message-network
+    depends_on:
+      - postgresql
+      - temporal
+      - redis
+
   opensearch:
     container_name: temporal-opensearch
     environment:
@@ -78,18 +138,19 @@ services:
   
   temporal-ui:
     container_name: temporal-ui
-    depends_on:
-      - temporal
+    image: temporalio/ui:${TEMPORAL_UI_VERSION}
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://localhost:3000
-    image: temporalio/ui:${TEMPORAL_UI_VERSION}
+    depends_on:
+      - temporal
     networks:
       - message-network
     ports:
       - 8080:8080
 
   redis:
+    container_name: redis
     image: redis:8.2.1-alpine
     ports:
       - "6379:6379"

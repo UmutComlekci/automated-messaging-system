@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/umutcomlekci/automated-messaging-system/internal/activities"
+	"github.com/umutcomlekci/automated-messaging-system/internal/config"
 	"github.com/umutcomlekci/automated-messaging-system/internal/handlers/scheduler"
 	"github.com/umutcomlekci/automated-messaging-system/internal/logging"
 	"github.com/umutcomlekci/automated-messaging-system/internal/repository/messages"
@@ -32,7 +33,7 @@ func pendingMessagesWorkerCommand(cmd *cobra.Command, args []string) error {
 	workerLogger := logging.NewLogger("pending_messages_worker")
 
 	c, err := client.Dial(client.Options{
-		HostPort: client.DefaultHostPort,
+		HostPort: config.GetTemporalHostPort(),
 		Logger:   log.NewStructuredLogger(logging.NewLogger("temporal")),
 	})
 	if err != nil {
@@ -51,6 +52,7 @@ func pendingMessagesWorkerCommand(cmd *cobra.Command, args []string) error {
 				ID:      scheduler.PendingMessagesScheduleName,
 				Overlap: enums.SCHEDULE_OVERLAP_POLICY_TERMINATE_OTHER,
 				Action: &client.ScheduleWorkflowAction{
+					ID:                       scheduler.PendingMessagesScheduleName,
 					Workflow:                 workflows.PendingMessagesWorkflow,
 					TaskQueue:                "sms",
 					WorkflowTaskTimeout:      time.Minute * 5,
