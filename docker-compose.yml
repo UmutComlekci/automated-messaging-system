@@ -52,6 +52,7 @@ services:
       - TEMPORAL_HOST=temporal:7233
       - POSTGRESQL_HOST=postgresql
       - REDIS_URL=redis://redis:6379
+      - PROVIDER_HTTP_URL=https://webhook.site/2b1660b7-2eda-4ad8-b9b7-b0c8b65131be
     networks:
       - message-network
     depends_on:
