@@ -1,6 +1,7 @@
 package workflows
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/umutcomlekci/automated-messaging-system/internal/activities"
@@ -62,7 +63,7 @@ func SendMessageWorkflow(ctx workflow.Context, input SendSmsInput) error {
 		return err
 	}
 
-	err = workflow.ExecuteActivity(ctx, cacheActivities.SetStruct, smsResult.SmsId, &cache.SentMessageCache{
+	err = workflow.ExecuteActivity(ctx, cacheActivities.SetStruct, fmt.Sprintf("sent_message:%s", input.Id), &cache.SentMessageCache{
 		PhoneNumber:       input.PhoneNumber,
 		Message:           input.Content,
 		SentAt:            workflow.Now(ctx),

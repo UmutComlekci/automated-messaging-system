@@ -30,7 +30,7 @@ func PendingMessagesWorkflow(ctx workflow.Context) error {
 
 	err := workflow.ExecuteActivity(ctx, messageRepositoryActivities.GetPendingMessages, &activities.PaginationInput{
 		Page:  1,
-		Limit: 10,
+		Limit: 2,
 	}).Get(ctx, &pendingMessages)
 	if err != nil {
 		logger.Error("error getting pending messages", "error", err.Error())
