@@ -1,0 +1,128 @@
+definitions:
+  handlers.APIResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  messages.CreateMessageRequest:
+    properties:
+      content:
+        maxLength: 160
+        type: string
+      phone_number:
+        type: string
+    required:
+    - content
+    - phone_number
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/messages:
+    post:
+      consumes:
+      - application/json
+      description: Add a new message to be sent automatically
+      parameters:
+      - description: Message data
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/messages.CreateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+      summary: Create a new message
+      tags:
+      - messages
+  /api/v1/messages/sent:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of sent messages with pagination
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+      summary: Get sent messages
+      tags:
+      - messages
+  /api/v1/scheduler/start:
+    post:
+      consumes:
+      - application/json
+      description: Start the automatic message sending scheduler
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+      summary: Start automatic message sending
+      tags:
+      - scheduler
+  /api/v1/scheduler/stop:
+    post:
+      consumes:
+      - application/json
+      description: Stop the automatic message sending scheduler
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.APIResponse'
+      summary: Stop automatic message sending
+      tags:
+      - scheduler
+swagger: "2.0"

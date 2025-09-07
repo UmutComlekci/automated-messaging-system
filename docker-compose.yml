@@ -1,0 +1,108 @@
+services:
+  opensearch:
+    container_name: temporal-opensearch
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_JAVA_OPTS=-Xms256m -Xmx256m
+      - cluster.routing.allocation.disk.threshold_enabled=true
+      - cluster.routing.allocation.disk.watermark.low=512mb
+      - cluster.routing.allocation.disk.watermark.high=256mb
+      - cluster.routing.allocation.disk.watermark.flood_stage=128mb
+      - plugins.security.disabled=true
+    image: opensearchproject/opensearch:${OPENSEARCH_VERSION}
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - message-network
+    expose:
+      - 9200
+    ports:
+      - 9200:9200
+    volumes:
+      - /usr/share/opensearch/data
+
+  postgresql:
+    container_name: postgresql
+    image: postgres:${POSTGRESQL_VERSION}
+    environment:
+      - POSTGRES_DB=messagedb
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_DEFAULT_PORT}:5432
+    volumes:
+      - ./.docker/postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./.docker/postgresql/postgres_data:/var/lib/postgresql/data
+    networks:
+      - message-network
+
+  temporal:
+    container_name: temporal
+    depends_on:
+      - postgresql
+      - opensearch
+    environment:
+      - DB=postgres12
+      - DB_PORT=${POSTGRES_DEFAULT_PORT}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PWD=${POSTGRES_PASSWORD}
+      - POSTGRES_SEEDS=postgresql
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - ENABLE_ES=true
+      - ES_SEEDS=opensearch
+      - ES_VERSION=v7
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    image: temporalio/auto-setup:${TEMPORAL_VERSION}
+    networks:
+      - message-network
+    ports:
+      - 7233:7233
+    volumes:
+      - ./.docker/temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+
+  temporal-admin-tools:
+    container_name: temporal-admin-tools
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    image: temporalio/admin-tools:${TEMPORAL_ADMINTOOLS_VERSION}
+    networks:
+      - message-network
+    stdin_open: true
+    tty: true
+  
+  temporal-ui:
+    container_name: temporal-ui
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    image: temporalio/ui:${TEMPORAL_UI_VERSION}
+    networks:
+      - message-network
+    ports:
+      - 8080:8080
+
+  redis:
+    image: redis:8.2.1-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./.docker/redis/redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - message-network
+
+networks:
+  message-network:
+    driver: bridge
